@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <header class="header" id="header">
+      <nav class="navBar">
+        <a class="btnLogin" href="{% url 'social:begin' 'suap' %}">Login</a>
+        <p href="#">Olá, {{user.first_name}}</p>
+        <img src="{{user.avatar}}" alt="" />
+        <p>{{user.identification}}</p>
+        <a class="btnLogout" href="{% url 'logout' %}">Logout</a>
+      </nav>
+    </header>
+  </body>
+</html>
