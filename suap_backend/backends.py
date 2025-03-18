@@ -16,9 +16,10 @@ class SuapOAuth2(BaseOAuth2):
     
 
     def user_data(self, access_token, *args, **kwargs):
+        scope = kwargs.get('response', {}).get('scope', '')  # Verifica se 'response' existe
         return self.request(
             url=self.USER_DATA_URL,
-            data={'scope': kwargs['response']['scope']},
+            data={'scope': scope},
             method='GET',
             headers={'Authorization': 'Bearer {0}'.format(access_token)}
         ).json()
