@@ -29,7 +29,6 @@ class SuapOAuth2(BaseOAuth2):
         você pode fazer aqui outras coisas, como salvar os dados do usuário
         (`response`) em algum outro model.
         """
-        print(response)
         splitted_name = response['nome'].split()
         first_name, last_name = splitted_name[0], ''
         if len(splitted_name) > 1:
