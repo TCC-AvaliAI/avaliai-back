@@ -1,7 +1,4 @@
-# coding: utf-8
-
 from social_core.backends.oauth import BaseOAuth2
-
 
 class SuapOAuth2(BaseOAuth2):
     name = 'suap'
@@ -16,7 +13,7 @@ class SuapOAuth2(BaseOAuth2):
     
 
     def user_data(self, access_token, *args, **kwargs):
-        scope = kwargs.get('response', {}).get('scope', '')  # Verifica se 'response' existe
+        scope = kwargs.get('response', {}).get('scope', '')
         return self.request(
             url=self.USER_DATA_URL,
             data={'scope': scope},
@@ -25,12 +22,6 @@ class SuapOAuth2(BaseOAuth2):
         ).json()
 
     def get_user_details(self, response):
-        """
-        Retorna um dicionário mapeando os fields do settings.AUTH_USER_MODEL.
-        você pode fazer aqui outras coisas, como salvar os dados do usuário
-        (`response`) em algum outro model.
-        """
-        print(response)
         splitted_name = response['nome'].split()
         first_name, last_name = splitted_name[0], ''
         if len(splitted_name) > 1:
@@ -39,7 +30,7 @@ class SuapOAuth2(BaseOAuth2):
             'username': response[self.ID_KEY],
             'first_name': first_name.strip(),
             'last_name': last_name.strip(),
-            'email': response['email'],
+            'email': response['email_google_classroom'],
             'identification': response['identificacao'],
             'role': response['tipo_usuario'],
             'avatar': response['foto'],

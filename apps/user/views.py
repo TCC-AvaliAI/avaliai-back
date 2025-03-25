@@ -22,7 +22,6 @@ def LogoutView(request):
 
 class SuapLoginView(APIView):
     def post(self, request):
-        print("Request data:", request.data)  # Log para depuração
         access_token = request.data.get('access_token')
         if not access_token:
             return Response({"error": "Access token is required"}, status=status.HTTP_400_BAD_REQUEST)
