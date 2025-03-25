@@ -9,8 +9,6 @@ class User(AbstractUser):
     avatar = models.URLField(max_length=255)
     role = models.CharField(max_length=255)
     full_name = models.CharField(max_length=255)
-    preferred_email = models.EmailField(max_length=255)
-    google_classroom_email = models.EmailField(max_length=255)
             
     def assign_group(self):
         groups = {
