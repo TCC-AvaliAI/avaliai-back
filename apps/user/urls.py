@@ -1,9 +1,8 @@
 from django.urls import path
-from django.contrib.auth.views import LogoutView
-from .views import *
+from .views import IndexView, LogoutView, SuapLoginView
 
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
-    path("logout/", LogoutView, name="logout"),
+    path("logout/", LogoutView.as_view(), name="logout"),
     path("login/suap/", SuapLoginView.as_view(), name="suap-login"),
 ]

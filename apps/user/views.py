@@ -7,7 +7,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from social_django.utils import load_strategy
-from social_django.models import UserSocialAuth
 from suap_backend.backends import SuapOAuth2
 
 
@@ -15,9 +14,14 @@ class IndexView(TemplateView):
     template_name = 'index.html'
 
 
-def LogoutView(request):
-    logout(request)
-    return redirect(config('URL_REDIRECT'))
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        response = Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
 
 
 class SuapLoginView(APIView):

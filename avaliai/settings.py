@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'social_django',
     'rolepermissions',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
