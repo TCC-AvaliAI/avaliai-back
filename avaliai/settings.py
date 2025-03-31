@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'apps.user',
     'apps.discipline',
+    'apps.classroom',
     'social_django',
     'rolepermissions',
     'rest_framework',
