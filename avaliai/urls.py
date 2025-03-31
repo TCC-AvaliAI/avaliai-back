@@ -22,6 +22,7 @@ urlpatterns = [
     path(r'accounts/', include('django.contrib.auth.urls')),
     path('', include('social_django.urls'), name='social'),
     path('api/user/', include('apps.user.urls')),
+    path('api/disciplines/', include('apps.discipline.urls')),
 ]
 
 admin.site.site_header = 'AvaliAI'

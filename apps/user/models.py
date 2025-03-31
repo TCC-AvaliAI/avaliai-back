@@ -1,9 +1,11 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import Group, AbstractUser
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 
 class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     identification = models.CharField(max_length=255)
     usual_name = models.CharField(max_length=255)
     avatar = models.URLField(max_length=255)
