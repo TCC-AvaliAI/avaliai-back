@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/disciplines/', include('apps.discipline.urls')),
     path('api/classrooms/', include('apps.classroom.urls')),
     path('api/questions/', include('apps.question.urls')),
+    path('api/exams/', include('apps.exam.urls')),
 ]
 
 admin.site.site_header = 'AvaliAI'

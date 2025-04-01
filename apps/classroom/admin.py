@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+class ClassroomAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'user')
+    search_fields = ('name',)
+    ordering = ('id',)
