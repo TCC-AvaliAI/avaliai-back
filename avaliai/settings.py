@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'apps.user',
     'apps.discipline',
     'apps.classroom',
+    'apps.question',
     'social_django',
     'rolepermissions',
     'rest_framework',
