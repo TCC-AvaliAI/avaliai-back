@@ -4,9 +4,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Question
-from .serializers import QuestionSerializer
+from apps.user.models import User
+from .serializers import QuestionSerializer, AIQuestionRequestSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from decouple import config
+import requests
+import json
 
 class QuestionListAndCreate(APIView):
     @swagger_auto_schema(
@@ -62,3 +66,43 @@ class QuestionUpdateAndDelete(APIView):
         question = get_object_or_404(Question, pk=question_id)
         question.delete()
         return Response({"message": "Question deleted"}, status=status.HTTP_204_NO_CONTENT)
+    
+
+class CreateQuestionByAI(APIView):
+    @swagger_auto_schema(
+        operation_description="Create a question using AI",
+        request_body=AIQuestionRequestSerializer,
+        responses={201: QuestionSerializer, 400: "Bad Request"}
+    )
+    def post(self, request):
+        serializer = AIQuestionRequestSerializer(data=request.data)
+        api_base = config('AI_API_BASE')
+
+        if serializer.is_valid():
+            description = serializer.validated_data['description']
+            user_id = serializer.validated_data['user']
+            user = get_object_or_404(User, pk=user_id)   
+            prompt = f"Generate a question based on the following description: {description}"
+            response = requests.post(
+                f"{api_base}/api/ai/response/",
+                headers={"Content-Type": "application/json"},
+                data=json.dumps({"prompt": prompt})
+            )
+            response_data = response.json()["response"]
+            answer = response_data.get('answer')
+            if isinstance(answer, str) and answer.isdigit():
+                answer = int(answer)
+
+            question = Question.objects.create(
+                title=response_data.get('title', ''),
+                options=response_data.get('options', []),
+                answer=answer if isinstance(answer, int) else None,
+                answer_text=response_data.get('answer', ''),
+                type=response_data.get('type', ''),
+                user=user,
+            )
+            question.save()
+
+            return Response(QuestionSerializer(question).data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
