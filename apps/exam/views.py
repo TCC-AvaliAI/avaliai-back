@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import Exam
-from .serializers import ExamSerializer
+from .serializers import ExamSerializer, ExamListSerializer
 from apps.question.serializers import QuestionSerializer
 from apps.question.models import Question
 from avaliai.ai_prompt import AIPrompt
@@ -17,12 +17,17 @@ import json
 class ExamListAndCreate(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve all exams",
+        request_body=ExamListSerializer,
         responses={200: ExamSerializer(many=True)}
     )
     def get(self, request):
-        exams = Exam.objects.all()
-        serializer = ExamSerializer(exams, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = ExamListSerializer(data=request.data)
+        if serializer.is_valid():
+            user_id = serializer.validated_data.get('user')
+            exams = Exam.objects.filter(user=user_id)
+            serializer = ExamSerializer(exams, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         operation_description="Create a new exam",

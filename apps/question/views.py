@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Question
 from apps.user.models import User
-from .serializers import QuestionSerializer, AIQuestionRequestSerializer
+from .serializers import QuestionSerializer, AIQuestionRequestSerializer, QuestionListSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from decouple import config
@@ -15,12 +15,17 @@ import json
 class QuestionListAndCreate(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve all questions",
+        request_body=QuestionListSerializer,
         responses={200: QuestionSerializer(many=True)}
     )
     def get(self, request):
-        questions = Question.objects.all()
-        serializer = QuestionSerializer(questions, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = QuestionListSerializer(data=request.data)
+        if serializer.is_valid():
+            user_id = serializer.validated_data.get('user')
+            questions = Question.objects.filter(user=user_id)
+            serializer = QuestionSerializer(questions, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         operation_description="Create a new question",
