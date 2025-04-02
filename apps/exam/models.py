@@ -2,10 +2,10 @@ import uuid
 from django.db import models
 
 class ExamStatus(models.TextChoices):
-    APPLIED = 'APPLIED', 'Applied'
-    PENDING = 'PENDING', 'Pending'
-    CANCELLED = 'CANCELLED', 'Cancelled'
-    ARCHIVED = 'ARCHIVED', 'Archived'
+    APPLIED = 'APPLIED', 'Aplicada'
+    PENDING = 'PENDING', 'Pendente'
+    CANCELLED = 'CANCELLED', 'Cancelada'
+    ARCHIVED = 'ARCHIVED', 'Arquivada'
 
 class ExamDifficulty(models.TextChoices):
     EASY = 'EASY', 'Easy'
