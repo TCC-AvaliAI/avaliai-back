@@ -6,6 +6,6 @@ class AIPrompt:
         A matéria é {discipline}.
         O tema da prova é {theme}.
         A dificuldade da prova é {difficulty}.
-        Para as questões de múltipla escolha, forneça as repostas em posições aleatórias. no array de opções."""
+        Para as questões de múltipla escolha, forneça as respostas em posições aleatórias. no array de opções."""
     def __str__(self):
         return self.ai_prompt
