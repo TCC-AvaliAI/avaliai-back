@@ -24,6 +24,9 @@ class Exam(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     applied_at = models.DateTimeField(blank=True, null=True)
     qr_code = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(max_length=1000)
+    theme = models.CharField(max_length=255)
+    was_generated_by_ai = models.BooleanField(default=False)
     difficulty = models.CharField(
         max_length=20,
         choices=ExamDifficulty.choices,
