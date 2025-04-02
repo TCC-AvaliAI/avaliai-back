@@ -8,6 +8,11 @@ from drf_yasg import openapi
 from .models import Exam
 from .serializers import ExamSerializer
 from apps.question.serializers import QuestionSerializer
+from apps.question.models import Question
+from avaliai.ai_prompt import AIPrompt
+from decouple import config
+import requests
+import json
 
 class ExamListAndCreate(APIView):
     @swagger_auto_schema(
@@ -103,3 +108,50 @@ class ExamQuestions(APIView):
             return Response({"error": "question_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         exam.questions.add(question_id)
         return Response({"message": "Question added to exam"}, status=status.HTTP_200_OK)
+
+class CreateExamByAI(APIView):
+    @swagger_auto_schema(
+        operation_description="Create a new exam and generate questions using AI",
+        request_body=ExamSerializer,
+        responses={201: ExamSerializer, 400: "Bad Request"}
+    )
+    def post(self, request):
+        serializer = ExamSerializer(data=request.data)
+        api_base = config('AI_API_BASE')
+        
+        if serializer.is_valid():
+            data = serializer.validated_data
+            prompt = AIPrompt(
+                type=data.get('title', 'prova'),
+                description=data.get('description', ''),
+                discipline=data.get('discipline').name,
+                theme=data.get('theme', ''),
+                difficulty=data.get('difficulty', 'MEDIUM')
+            ).ai_prompt
+            try:
+                response = requests.post(
+                    f"{api_base}/api/ai/response/",
+                    headers={"Content-Type": "application/json"},
+                    data=json.dumps({"prompt": prompt})
+                )
+                response_data = response.json()
+                exam = serializer.save()
+                for question_data in response_data["response"]:
+                    answer = question_data['answer']
+                    if isinstance(answer, str) and answer.isdigit():
+                        answer = int(answer)
+                    question = Question.objects.create(
+                        title=question_data['title'],
+                        options=question_data['options'],
+                        answer=answer if isinstance(answer, int) else None,
+                        answer_text=question_data['answer'],
+                        type=question_data['type'],
+                        user=data.get('user'),
+                    )
+                    question.save()
+                    exam.questions.add(question)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except requests.RequestException as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'social_django',
     'rolepermissions',
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     'drf_yasg',
 ]
