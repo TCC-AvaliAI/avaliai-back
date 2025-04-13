@@ -9,7 +9,7 @@ class QuestionType(models.TextChoices):
 
 class Question(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=500)
     options = ArrayField(models.CharField(max_length=100), null=True, blank=True)
     answer = models.IntegerField(null=True, blank=True)
     answer_text = models.TextField(max_length=1000, null=True, blank=True)

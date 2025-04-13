@@ -6,17 +6,22 @@ from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import Classroom
-from .serializers import ClassroomSerializer
+from .serializers import ClassroomSerializer, ClassroomListSerializer
 
 class ClassroomListAndCreate(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve all classrooms",
+        request_body=ClassroomListSerializer,
         responses={200: ClassroomSerializer(many=True)}
     )
     def get(self, request):
-        classrooms = Classroom.objects.all()
-        serializer = ClassroomSerializer(classrooms, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = ClassroomListSerializer(data=request.data)
+        if serializer.is_valid():
+            user_id = serializer.validated_data.get('user')
+            classrooms = Classroom.objects.filter(user=user_id)
+            serializer = ClassroomSerializer(classrooms, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         operation_description="Create a new classroom",

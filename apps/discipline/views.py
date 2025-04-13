@@ -4,19 +4,24 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Discipline
-from .serializers import DisciplineSerializer
+from .serializers import DisciplineSerializer, DisciplineListSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 class DisciplineListAndCreate(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve all disciplines",
+        request_body=DisciplineListSerializer,
         responses={200: DisciplineSerializer(many=True)}
     )
     def get(self, request):
-        disciplines = Discipline.objects.all()
-        serializer = DisciplineSerializer(disciplines, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = DisciplineListSerializer(data=request.data)
+        if serializer.is_valid():
+            user_id = serializer.validated_data.get('user')
+            disciplines = Discipline.objects.filter(user=user_id)
+            serializer = DisciplineSerializer(disciplines, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         operation_description="Create a new discipline",
