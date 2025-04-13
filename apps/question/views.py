@@ -88,12 +88,28 @@ class CreateQuestionByAI(APIView):
             user_id = serializer.validated_data['user']
             user = get_object_or_404(User, pk=user_id)   
             prompt = f"Generate a question based on the following description: {description}"
-            response = requests.post(
-                f"{api_base}/api/ai/response/",
-                headers={"Content-Type": "application/json"},
-                data=json.dumps({"prompt": prompt})
-            )
-            response_data = response.json()["response"]
+            try:
+                response = requests.post(
+                    f"{api_base}/api/ai/response/",
+                    headers={"Content-Type": "application/json"},
+                    data=json.dumps({"prompt": prompt})
+                )
+                if response.status_code != 200:
+                    return Response(
+                        {"error": f"AI API returned an error: {response.status_code}"},
+                        status=status.HTTP_502_BAD_GATEWAY
+                    )
+                response_data = response.json().get("response", {})
+            except requests.exceptions.RequestException as e:
+                return Response(
+                    {"error": f"Failed to connect to AI API: {str(e)}"},
+                    status=status.HTTP_502_BAD_GATEWAY
+                )
+            except json.JSONDecodeError:
+                return Response(
+                    {"error": "Invalid JSON response from AI API"},
+                    status=status.HTTP_502_BAD_GATEWAY
+                )
             answer = response_data.get('answer')
             if isinstance(answer, str) and answer.isdigit():
                 answer = int(answer)
