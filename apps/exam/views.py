@@ -17,11 +17,11 @@ import json
 class ExamListAndCreate(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve all exams",
-        request_body=ExamListSerializer,
+        query_serializer=ExamListSerializer,
         responses={200: ExamSerializer(many=True)}
     )
     def get(self, request):
-        serializer = ExamListSerializer(data=request.data)
+        serializer = ExamListSerializer(data=request.GET)
         if serializer.is_valid():
             user_id = serializer.validated_data.get('user')
             exams = Exam.objects.filter(user=user_id)
@@ -77,11 +77,6 @@ class ExamUpdateAndDelete(APIView):
 class ExamQuestions(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve all questions of an exam",
-        manual_parameters=[
-            openapi.Parameter(
-                'exam_id', openapi.IN_PATH, description="ID of the exam", type=openapi.TYPE_STRING
-            )
-        ],
         responses={200: QuestionSerializer(many=True)}
     )
     def get(self, request, exam_id):

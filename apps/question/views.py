@@ -15,11 +15,11 @@ import json
 class QuestionListAndCreate(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve all questions",
-        request_body=QuestionListSerializer,
+        query_serializer=QuestionListSerializer,
         responses={200: QuestionSerializer(many=True)}
     )
     def get(self, request):
-        serializer = QuestionListSerializer(data=request.data)
+        serializer = QuestionListSerializer(data=request.GET)
         if serializer.is_valid():
             user_id = serializer.validated_data.get('user')
             questions = Question.objects.filter(user=user_id)

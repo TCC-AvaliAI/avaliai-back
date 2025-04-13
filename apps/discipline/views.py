@@ -11,11 +11,11 @@ from drf_yasg import openapi
 class DisciplineListAndCreate(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve all disciplines",
-        request_body=DisciplineListSerializer,
+        query_serializer=DisciplineListSerializer,
         responses={200: DisciplineSerializer(many=True)}
     )
     def get(self, request):
-        serializer = DisciplineListSerializer(data=request.data)
+        serializer = DisciplineListSerializer(data=request.GET)
         if serializer.is_valid():
             user_id = serializer.validated_data.get('user')
             disciplines = Discipline.objects.filter(user=user_id)

@@ -11,11 +11,11 @@ from .serializers import ClassroomSerializer, ClassroomListSerializer
 class ClassroomListAndCreate(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve all classrooms",
-        request_body=ClassroomListSerializer,
+        query_serializer=ClassroomListSerializer,
         responses={200: ClassroomSerializer(many=True)}
     )
     def get(self, request):
-        serializer = ClassroomListSerializer(data=request.data)
+        serializer = ClassroomListSerializer(data=request.GET)
         if serializer.is_valid():
             user_id = serializer.validated_data.get('user')
             classrooms = Classroom.objects.filter(user=user_id)
