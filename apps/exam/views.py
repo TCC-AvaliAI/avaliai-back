@@ -13,21 +13,39 @@ from avaliai.ai_prompt import AIPrompt
 from decouple import config
 import requests
 import json
+from django.core.exceptions import ValidationError
 
 class ExamListAndCreate(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve all exams",
         query_serializer=ExamListSerializer,
-        responses={200: ExamSerializer(many=True)}
+        responses={
+            200: ExamSerializer(many=True),
+            400: "Bad Request - UUID inválido"
+        }
     )
     def get(self, request):
         serializer = ExamListSerializer(data=request.GET)
-        if serializer.is_valid():
-            user_id = serializer.validated_data.get('user')
-            exams = Exam.objects.filter(user=user_id)
-            serializer = ExamSerializer(exams, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if serializer.is_valid():
+                user_id = serializer.validated_data.get('user')
+                exams = Exam.objects.filter(user=user_id)
+                serializer = ExamSerializer(exams, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(
+                {"error": "UUID de usuário inválido", "details": serializer.errors}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except ValidationError as e:
+            return Response(
+                {"error": "UUID de usuário inválido", "details": str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {"error": "Erro ao buscar exames", "details": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @swagger_auto_schema(
         operation_description="Create a new exam",
