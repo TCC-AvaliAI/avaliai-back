@@ -59,7 +59,21 @@ class ExamListAndCreate(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class ExamUpdateAndDelete(APIView):
+class ExamDetailUpdateAndDelete(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrieve an exam by ID",
+        manual_parameters=[
+            openapi.Parameter(
+                'exam_id', openapi.IN_PATH, description="ID of the exam", type=openapi.TYPE_STRING
+            )
+        ],
+        responses={200: ExamSerializer, 404: "Not Found"}
+    )
+    def get(self, request, exam_id):
+        exam = get_object_or_404(Exam, pk=exam_id)
+        serializer = ExamSerializer(exam)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @swagger_auto_schema(
         operation_description="Update an exam by ID",
         request_body=ExamSerializer,
