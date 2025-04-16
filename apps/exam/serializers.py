@@ -46,3 +46,5 @@ class ExamStatisticsSerializer(serializers.Serializer):
     last_week = serializers.IntegerField()
     applied_last_month= serializers.IntegerField()
     total_exams_applied = serializers.IntegerField()
+    recent_exams = ExamSerializer(many=True)
+    next_exams_applications = ExamSerializer(many=True)

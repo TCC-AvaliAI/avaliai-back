@@ -14,6 +14,9 @@ def get_exam_statistics():
     last_week = Exam.objects.filter(created_at__week=current_week - 1).count()
     applied_last_month = Exam.objects.filter(created_at__month=current_month, status="APPLIED").count()
     total_exams_applied = Exam.objects.filter(status="APPLIED").count()
+    recent_exams = Exam.objects.filter(created_at__gte=now - timezone.timedelta(days=30))
+    next_exams_applications = Exam.objects.filter(status="PENDING").order_by("created_at")
+
     return {
         "total_exams": total_exams,
         "last_month": last_month,
@@ -21,4 +24,6 @@ def get_exam_statistics():
         "last_week": last_week,
         "applied_last_month": applied_last_month,
         "total_exams_applied": total_exams_applied,
+        "recent_exams": recent_exams,
+        "next_exams_applications": next_exams_applications
     }
