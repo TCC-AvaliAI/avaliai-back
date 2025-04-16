@@ -15,7 +15,7 @@ def get_exam_statistics():
     applied_last_month = Exam.objects.filter(created_at__month=current_month, status="APPLIED").count()
     total_exams_applied = Exam.objects.filter(status="APPLIED").count()
     recent_exams = Exam.objects.filter(created_at__gte=now - timezone.timedelta(days=30))
-    next_exams_applications = Exam.objects.filter(status="PENDING").order_by("created_at")
+    recent_questions = Question.objects.filter(created_at__month=current_month)
     total_questions = Question.objects.count()
     total_questions_last_month = Question.objects.filter(created_at__month=current_month).count()
     total_exams_generated_by_ai = Exam.objects.filter(was_generated_by_ai=True).count()
@@ -29,7 +29,7 @@ def get_exam_statistics():
         "applied_last_month": applied_last_month,
         "total_exams_applied": total_exams_applied,
         "recent_exams": recent_exams,
-        "next_exams_applications": next_exams_applications,
+        "recent_questions": recent_questions,
         "total_questions": total_questions,
         "total_questions_last_month": total_questions_last_month,
         "total_exams_generated_by_ai": total_exams_generated_by_ai,

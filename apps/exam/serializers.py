@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Exam
 from apps.question.models import Question
+from apps.question.serializers import QuestionSerializer
 import uuid
 
 class SimpleQuestionSerializer(serializers.ModelSerializer):
@@ -51,4 +52,10 @@ class ExamStatisticsSerializer(serializers.Serializer):
     total_exams_generated_by_ai = serializers.IntegerField()
     total_exams_generated_by_ai_last_month = serializers.IntegerField()
     recent_exams = ExamSerializer(many=True)
-    next_exams_applications = ExamSerializer(many=True)
+    recent_questions = QuestionSerializer(many=True)
+
+class UpdateExamQRCodeSerializer(serializers.ModelSerializer):
+    qr_code = serializers.CharField(required=True)
+    class Meta:
+        model = Exam
+        fields = ['qr_code']

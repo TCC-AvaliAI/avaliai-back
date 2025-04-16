@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import Exam
-from .serializers import ExamSerializer, ExamListSerializer, ExamStatisticsSerializer
+from .serializers import ExamSerializer, ExamListSerializer, ExamStatisticsSerializer, UpdateExamQRCodeSerializer
 from apps.question.serializers import QuestionSerializer
 from apps.question.models import Question
 from avaliai.ai_prompt import AIPrompt
@@ -191,7 +191,32 @@ class CreateExamByAI(APIView):
     
 
 class ExamDetails(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrieve exam statistics",
+        responses={200: ExamStatisticsSerializer}
+    )
     def get(self, request):
         stats = get_exam_statistics()
         serializer = ExamStatisticsSerializer(stats)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class UpdateExamQRCode(APIView):
+    @swagger_auto_schema(
+        operation_description="Update exam QR code",
+        request_body=UpdateExamQRCodeSerializer,
+        manual_parameters=[
+            openapi.Parameter(
+                'exam_id', openapi.IN_PATH, description="ID of the exam", type=openapi.TYPE_STRING
+            )
+        ],
+        responses={200: UpdateExamQRCodeSerializer, 400: "Bad Request", 404: "Not Found"}
+    )
+    def patch(self, request, exam_id):
+        exam = get_object_or_404(Exam, pk=exam_id)
+        if not request.data.get('qr_code'):
+            return Response({"error": "qr_code is required"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = UpdateExamQRCodeSerializer(exam, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
