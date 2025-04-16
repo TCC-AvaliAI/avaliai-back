@@ -11,6 +11,7 @@ from drf_yasg import openapi
 from decouple import config
 import requests
 import json
+import uuid
 
 class QuestionListAndCreate(APIView):
     @swagger_auto_schema(
@@ -22,9 +23,16 @@ class QuestionListAndCreate(APIView):
         serializer = QuestionListSerializer(data=request.GET)
         if serializer.is_valid():
             user_id = serializer.validated_data.get('user')
-            questions = Question.objects.filter(user=user_id)
-            serializer = QuestionSerializer(questions, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            try:
+                uuid.UUID(str(user_id))
+                questions = Question.objects.filter(user=user_id)
+                serializer = QuestionSerializer(questions, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except ValueError:
+                return Response(
+                    {"error": "Invalid UUID format"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
