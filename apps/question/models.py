@@ -1,6 +1,9 @@
 import uuid
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.utils import timezone
+
+
 
 class QuestionType(models.TextChoices):
     MULTIPLE_CHOICE = 'MC', 'Multiple Choice'
@@ -15,6 +18,7 @@ class Question(models.Model):
     answer_text = models.TextField(max_length=1000, null=True, blank=True)
     user = models.ForeignKey('user.User', on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
     type = models.CharField(
         max_length=2,
         choices=QuestionType.choices,

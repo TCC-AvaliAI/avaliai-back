@@ -168,7 +168,7 @@ class CreateExamByAI(APIView):
                     data=json.dumps({"prompt": prompt})
                 )
                 response_data = response.json()
-                exam = serializer.save()
+                exam = serializer.save(was_generated_by_ai=True)
                 for question_data in response_data["response"]:
                     answer = question_data['answer']
                     if isinstance(answer, str) and answer.isdigit():
