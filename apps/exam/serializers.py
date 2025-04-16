@@ -37,3 +37,12 @@ class ExamListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exam
         fields = ['user']
+
+
+class ExamStatisticsSerializer(serializers.Serializer):
+    total_exams = serializers.IntegerField()
+    last_month = serializers.IntegerField()
+    total_weeks = serializers.IntegerField()
+    last_week = serializers.IntegerField()
+    applied_last_month= serializers.IntegerField()
+    total_exams_applied = serializers.IntegerField()

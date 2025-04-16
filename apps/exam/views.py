@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import Exam
-from .serializers import ExamSerializer, ExamListSerializer
+from .serializers import ExamSerializer, ExamListSerializer, ExamStatisticsSerializer
 from apps.question.serializers import QuestionSerializer
 from apps.question.models import Question
 from avaliai.ai_prompt import AIPrompt
@@ -14,6 +14,7 @@ from decouple import config
 import requests
 import json
 from django.core.exceptions import ValidationError
+from .services.exam_statistics import get_exam_statistics
 
 class ExamListAndCreate(APIView):
     @swagger_auto_schema(
@@ -187,3 +188,10 @@ class CreateExamByAI(APIView):
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ExamDetails(APIView):
+    def get(self, request):
+        stats = get_exam_statistics()
+        serializer = ExamStatisticsSerializer(stats)
+        return Response(serializer.data, status=status.HTTP_200_OK)
