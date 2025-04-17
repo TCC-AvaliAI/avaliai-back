@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ExamListAndCreate, ExamDetailUpdateAndDelete, ExamQuestions, CreateExamByAI, ExamDetails, UpdateExamQRCode
+from .views import ExamListAndCreate, ExamDetailUpdateAndDelete, ExamQuestions, CreateExamByAI, ExamDetails, UpdateExamQRCode, ExamPDFFile
 
 urlpatterns = [
     path('', ExamListAndCreate.as_view(), name='exam-list-create'),
@@ -8,4 +8,5 @@ urlpatterns = [
     path('<str:exam_id>/questions/', ExamQuestions.as_view(), name='exam-list-add-question'),
     path('details/', ExamDetails.as_view(), name='exam-details'),
     path('<str:exam_id>/qrcode/', UpdateExamQRCode.as_view(), name='exam-update-qr-code'),
+    path('<str:exam_id>/file/', ExamPDFFile.as_view(), name='exam-pdf-file'),
 ]

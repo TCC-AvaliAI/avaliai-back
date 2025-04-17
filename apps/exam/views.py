@@ -15,6 +15,11 @@ import requests
 import json
 from django.core.exceptions import ValidationError
 from .services.exam_statistics import get_exam_statistics
+from .services.exam_html import generate_html_exam
+import pdfkit
+from django.http import HttpResponse
+from pdfkit.configuration import Configuration
+
 
 class ExamListAndCreate(APIView):
     @swagger_auto_schema(
@@ -220,3 +225,24 @@ class UpdateExamQRCode(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ExamPDFFile(APIView):
+    @swagger_auto_schema(
+        operation_description="Generate a PDF file of the exam",
+        manual_parameters=[
+            openapi.Parameter(
+                'exam_id', openapi.IN_PATH, description="ID of the exam", type=openapi.TYPE_STRING
+            )
+        ],
+        responses={200: "PDF file"}
+    )
+    def get(self, request, exam_id):
+        exam = get_object_or_404(Exam, pk=exam_id)  
+        if(exam.qr_code == None):
+            return Response({"error": "The qr code has not been generated yet"}, status=status.HTTP_400_BAD_REQUEST)
+        html_content = generate_html_exam(exam)
+        config = Configuration(wkhtmltopdf='/usr/bin/wkhtmltopdf')
+        pdf = pdfkit.from_string(html_content, False, configuration=config)
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{exam.title}.pdf"'
+        return response
