@@ -1,4 +1,5 @@
 from social_core.backends.oauth import BaseOAuth2
+from requests.exceptions import HTTPError
 
 class SuapOAuth2(BaseOAuth2):
     name = 'suap'
@@ -13,13 +14,18 @@ class SuapOAuth2(BaseOAuth2):
     
 
     def user_data(self, access_token, *args, **kwargs):
-        scope = kwargs.get('response', {}).get('scope', '')
-        return self.request(
-            url=self.USER_DATA_URL,
-            data={'scope': scope},
-            method='GET',
-            headers={'Authorization': 'Bearer {0}'.format(access_token)}
-        ).json()
+        try:
+            scope = kwargs.get('response', {}).get('scope', '')
+            return self.request(
+                url=self.USER_DATA_URL,
+                data={'scope': scope},
+                method='GET',
+                headers={'Authorization': 'Bearer {0}'.format(access_token)}
+            ).json()
+        except HTTPError as e:
+            if e.response.status_code == 401:
+                raise ValueError("Invalid access token")  # Custom exception message
+            raise
 
     def get_user_details(self, response):
         splitted_name = response['nome'].split()

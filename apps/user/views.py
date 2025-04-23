@@ -45,5 +45,7 @@ class SuapLoginView(APIView):
                 }}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Authentication failed"}, status=status.HTTP_401_UNAUTHORIZED)
+        except ValueError as e:  # Captura de token inválido
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
