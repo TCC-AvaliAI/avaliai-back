@@ -16,15 +16,20 @@ class SuapOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         try:
             scope = kwargs.get('response', {}).get('scope', '')
-            return self.request(
+            response = self.request(
                 url=self.USER_DATA_URL,
                 data={'scope': scope},
                 method='GET',
-                headers={'Authorization': 'Bearer {0}'.format(access_token)}
-            ).json()
+                headers={'Authorization': f'Bearer {access_token}'}
+            )
+            response.raise_for_status() 
+            return response.json()
         except HTTPError as e:
             if e.response.status_code == 401:
-                raise ValueError("Invalid access token")  # Custom exception message
+                raise ValueError("Invalid access token") 
+            raise
+        except Exception as e:
+            print(f"Erro ao buscar dados do usuário: {e}")
             raise
 
     def get_user_details(self, response):

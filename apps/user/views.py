@@ -1,14 +1,11 @@
-from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth import logout, login
-from django.shortcuts import redirect
-from decouple import config
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from social_django.utils import load_strategy
 from suap_backend.backends import SuapOAuth2
-
+from rest_framework.permissions import AllowAny
 
 class IndexView(TemplateView):
     template_name = 'index.html'
@@ -25,11 +22,15 @@ class LogoutView(APIView):
 
 
 class SuapLoginView(APIView):
-    def post(self, request):
-        access_token = request.data.get('access_token')
-        if not access_token:
-            return Response({"error": "Access token is required"}, status=status.HTTP_400_BAD_REQUEST)
+    authentication_classes = []  
+    permission_classes = [AllowAny]  
 
+    def post(self, request):
+        access_token = request.headers.get('Authorization')
+        if not access_token:
+            return Response({"error": "Access token is required in the Authorization header"}, status=status.HTTP_400_BAD_REQUEST)
+        if access_token.startswith("Bearer "):
+            access_token = access_token[7:]
         strategy = load_strategy(request)
         backend = SuapOAuth2(strategy=strategy)
         try:
@@ -45,7 +46,9 @@ class SuapLoginView(APIView):
                 }}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Authentication failed"}, status=status.HTTP_401_UNAUTHORIZED)
-        except ValueError as e:  # Captura de token inválido
+        except ValueError as e:
+            print(f"Erro de autenticação: {e}")  
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
+            print(f"Erro inesperado: {e}")  
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
