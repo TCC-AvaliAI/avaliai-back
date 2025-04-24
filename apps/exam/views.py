@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import Exam
+from .models import Exam, ExamStatus
 from .serializers import ExamSerializer, ExamListSerializer, ExamStatisticsSerializer, UpdateExamQRCodeSerializer
 from apps.question.serializers import QuestionSerializer
 from apps.question.models import Question
@@ -247,3 +247,66 @@ class ExamPDFFile(APIView):
         response = HttpResponse(pdf, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{exam.title}.pdf"'
         return response
+    
+
+
+class MarkExamAsApplied(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Mark an exam as applied",
+        manual_parameters=[
+            openapi.Parameter(
+                'exam_id', openapi.IN_PATH, description="ID of the exam", type=openapi.TYPE_STRING
+            )
+        ],
+        responses={200: "Exam marked as applied", 404: "Not Found"}
+    )
+    def patch(self, request, exam_id):
+        exam = get_object_or_404(Exam, pk=exam_id)
+        if(exam.status == ExamStatus.APPLIED):
+            return Response({"message": "Exam already marked as applied"}, status=status.HTTP_400_BAD_REQUEST)
+        exam.status = ExamStatus.APPLIED
+        exam.save()
+        return Response({"message": "Exam marked as applied"}, status=status.HTTP_200_OK)
+
+
+class MarkExamAsArchived(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Mark an exam as archived",
+        manual_parameters=[
+            openapi.Parameter(
+                'exam_id', openapi.IN_PATH, description="ID of the exam", type=openapi.TYPE_STRING
+            )
+        ],
+        responses={200: "Exam marked as archived", 404: "Not Found"}
+    )
+    def patch(self, request, exam_id):
+        exam = get_object_or_404(Exam, pk=exam_id)
+        if(exam.status == ExamStatus.ARCHIVED):
+            return Response({"message": "Exam already marked as archived"}, status=status.HTTP_400_BAD_REQUEST)
+        exam.status = ExamStatus.ARCHIVED
+        exam.save()
+        return Response({"message": "Exam marked as archived"}, status=status.HTTP_200_OK)
+    
+class MarkExamAsCanceled(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Mark an exam as canceled",
+        manual_parameters=[
+            openapi.Parameter(
+                'exam_id', openapi.IN_PATH, description="ID of the exam", type=openapi.TYPE_STRING
+            )
+        ],
+        responses={200: "Exam marked as canceled", 404: "Not Found"}
+    )
+    def patch(self, request, exam_id):
+        exam = get_object_or_404(Exam, pk=exam_id)
+        if(exam.status == ExamStatus.CANCELLED):
+            return Response({"message": "Exam already marked as canceled"}, status=status.HTTP_400_BAD_REQUEST)
+        exam.status = ExamStatus.CANCELLED
+        exam.save()
+        return Response({"message": "Exam marked as canceled"}, status=status.HTTP_200_OK)

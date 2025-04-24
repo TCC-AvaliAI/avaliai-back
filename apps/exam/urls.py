@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ExamListAndCreate, ExamDetailUpdateAndDelete, ExamQuestions, CreateExamByAI, ExamDetails, UpdateExamQRCode, ExamPDFFile
+from apps.exam.views import *
 
 urlpatterns = [
     path('', ExamListAndCreate.as_view(), name='exam-list-create'),
@@ -9,4 +9,7 @@ urlpatterns = [
     path('details/', ExamDetails.as_view(), name='exam-details'),
     path('<str:exam_id>/qrcode/', UpdateExamQRCode.as_view(), name='exam-update-qr-code'),
     path('<str:exam_id>/file/', ExamPDFFile.as_view(), name='exam-pdf-file'),
+    path('<str:exam_id>/apply/', MarkExamAsApplied.as_view(), name='exam-apply'),
+    path('<str:exam_id>/archive/', MarkExamAsArchived.as_view(), name='exam-archive'),
+    path('<str:exam_id>/cancel/', MarkExamAsCanceled.as_view(), name='exam-canceled'),
 ]
