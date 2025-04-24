@@ -1,5 +1,7 @@
 from social_core.backends.oauth import BaseOAuth2
 from requests.exceptions import HTTPError
+from rest_framework import exceptions
+
 
 class SuapOAuth2(BaseOAuth2):
     name = 'suap'

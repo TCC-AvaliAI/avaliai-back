@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -22,6 +23,8 @@ from pdfkit.configuration import Configuration
 
 
 class ExamListAndCreate(APIView):
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="Retrieve all exams",
         query_serializer=ExamListSerializer,
@@ -33,20 +36,10 @@ class ExamListAndCreate(APIView):
     def get(self, request):
         serializer = ExamListSerializer(data=request.GET)
         try:
-            if serializer.is_valid():
-                user_id = serializer.validated_data.get('user')
-                exams = Exam.objects.filter(user=user_id)
-                serializer = ExamSerializer(exams, many=True)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(
-                {"error": "UUID de usuário inválido", "details": serializer.errors}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        except ValidationError as e:
-            return Response(
-                {"error": "UUID de usuário inválido", "details": str(e)}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            user = self.request.user
+            exams = Exam.objects.filter(user=user)
+            serializer = ExamSerializer(exams, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(
                 {"error": "Erro ao buscar exames", "details": str(e)}, 
@@ -66,6 +59,8 @@ class ExamListAndCreate(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ExamDetailUpdateAndDelete(APIView):
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="Retrieve an exam by ID",
         manual_parameters=[
@@ -113,6 +108,8 @@ class ExamDetailUpdateAndDelete(APIView):
         return Response({"message": "Exam deleted"}, status=status.HTTP_204_NO_CONTENT)
     
 class ExamQuestions(APIView):
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="Retrieve all questions of an exam",
         responses={200: QuestionSerializer(many=True)}
@@ -148,6 +145,8 @@ class ExamQuestions(APIView):
         return Response({"message": "Question added to exam"}, status=status.HTTP_200_OK)
 
 class CreateExamByAI(APIView):
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="Create a new exam and generate questions using AI",
         request_body=ExamSerializer,
@@ -196,6 +195,8 @@ class CreateExamByAI(APIView):
     
 
 class ExamDetails(APIView):
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="Retrieve exam statistics",
         responses={200: ExamStatisticsSerializer}

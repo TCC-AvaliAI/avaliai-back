@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Question
 from apps.user.models import User
-from .serializers import QuestionSerializer, AIQuestionRequestSerializer, QuestionListSerializer
+from .serializers import QuestionSerializer, AIQuestionRequestSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from decouple import config
@@ -14,27 +15,20 @@ import json
 import uuid
 
 class QuestionListAndCreate(APIView):
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="Retrieve all questions",
-        query_serializer=QuestionListSerializer,
+        query_serializer=QuestionSerializer,
         responses={200: QuestionSerializer(many=True)}
     )
     def get(self, request):
-        serializer = QuestionListSerializer(data=request.GET)
-        if serializer.is_valid():
-            user_id = serializer.validated_data.get('user')
-            try:
-                uuid.UUID(str(user_id))
-                questions = Question.objects.filter(user=user_id)
-                serializer = QuestionSerializer(questions, many=True)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            except ValueError:
-                return Response(
-                    {"error": "Invalid UUID format"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        serializer = QuestionSerializer(data=request.GET)
+        user = self.request.user
+        questions = Question.objects.filter(user=user)
+        serializer = QuestionSerializer(questions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+       
     @swagger_auto_schema(
         operation_description="Create a new question",
         request_body=QuestionSerializer,
@@ -48,6 +42,8 @@ class QuestionListAndCreate(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class QuestionUpdateAndDelete(APIView):
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="Update a question by ID",
         request_body=QuestionSerializer,
@@ -82,6 +78,8 @@ class QuestionUpdateAndDelete(APIView):
     
 
 class CreateQuestionByAI(APIView):
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="Create a question using AI",
         request_body=AIQuestionRequestSerializer,
@@ -93,8 +91,7 @@ class CreateQuestionByAI(APIView):
 
         if serializer.is_valid():
             description = serializer.validated_data['description']
-            user_id = serializer.validated_data['user']
-            user = get_object_or_404(User, pk=user_id)   
+            user = self.request.user 
             prompt = f"Generate a question based on the following description: {description}"
             try:
                 response = requests.post(

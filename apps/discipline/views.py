@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Discipline
@@ -9,6 +10,8 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 class DisciplineListAndCreate(APIView):
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="Retrieve all disciplines",
         query_serializer=DisciplineListSerializer,
@@ -16,12 +19,10 @@ class DisciplineListAndCreate(APIView):
     )
     def get(self, request):
         serializer = DisciplineListSerializer(data=request.GET)
-        if serializer.is_valid():
-            user_id = serializer.validated_data.get('user')
-            disciplines = Discipline.objects.filter(user=user_id)
-            serializer = DisciplineSerializer(disciplines, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = self.request.user
+        disciplines = Discipline.objects.filter(user=user)
+        serializer = DisciplineSerializer(disciplines, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_description="Create a new discipline",
@@ -36,6 +37,8 @@ class DisciplineListAndCreate(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class DisciplineUpdateAndDelete(APIView):
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="Update a discipline by ID",
         request_body=DisciplineSerializer,

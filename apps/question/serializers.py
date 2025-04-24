@@ -9,10 +9,3 @@ class QuestionSerializer(serializers.ModelSerializer):
 class AIQuestionRequestSerializer(serializers.Serializer):
     description = serializers.CharField(required=True)
     user = serializers.CharField(required=True)
-
-
-class QuestionListSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(required=True)
-    class Meta:
-        model = Question
-        fields = ['user']
