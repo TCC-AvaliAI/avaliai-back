@@ -37,7 +37,7 @@ class ExamListAndCreate(APIView):
         serializer = ExamListSerializer(data=request.GET)
         try:
             user = self.request.user
-            exams = Exam.objects.filter(user=user)
+            exams = Exam.objects.filter(user=user).order_by('-created_at')
             serializer = ExamSerializer(exams, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -219,6 +219,8 @@ class UpdateExamQRCode(APIView):
     )
     def patch(self, request, exam_id):
         exam = get_object_or_404(Exam, pk=exam_id)
+        if(exam.qr_code != None):
+            return Response({"error": "The qr code has already been generated"}, status=status.HTTP_400_BAD_REQUEST)
         if not request.data.get('qr_code'):
             return Response({"error": "qr_code is required"}, status=status.HTTP_400_BAD_REQUEST)
         serializer = UpdateExamQRCodeSerializer(exam, data=request.data, partial=True)
