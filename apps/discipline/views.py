@@ -30,7 +30,7 @@ class DisciplineListAndCreate(APIView):
         responses={201: DisciplineSerializer, 400: "Bad Request"}
     )
     def post(self, request):
-        serializer = DisciplineSerializer(data=request.data)
+        serializer = DisciplineSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

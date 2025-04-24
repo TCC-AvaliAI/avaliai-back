@@ -35,7 +35,7 @@ class QuestionListAndCreate(APIView):
         responses={201: QuestionSerializer, 400: "Bad Request"}
     )
     def post(self, request):
-        serializer = QuestionSerializer(data=request.data)
+        serializer = QuestionSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -125,7 +125,7 @@ class CreateQuestionByAI(APIView):
                 answer=answer if isinstance(answer, int) else None,
                 answer_text=response_data.get('answer', ''),
                 type=response_data.get('type', ''),
-                user=user,
+                user=request.user,  # Adicionando o usuário aqui
             )
             question.save()
 

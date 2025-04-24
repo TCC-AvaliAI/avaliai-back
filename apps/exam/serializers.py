@@ -7,7 +7,7 @@ import uuid
 class SimpleQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = '__all__'
+        exclude = ('user',)
 
 class ExamSerializer(serializers.ModelSerializer):
     discipline_name = serializers.CharField(source='discipline.name', read_only=True)
@@ -16,7 +16,11 @@ class ExamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Exam
-        fields = '__all__'
+        exclude = ('user',)
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -25,20 +29,9 @@ class ExamSerializer(serializers.ModelSerializer):
         return representation
 
 class ExamListSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(required=True)
-    
-    def validate_user(self, value):
-        if value == 'undefined' or not value:
-            raise serializers.ValidationError("É necessário um UUID de usuário válido")
-        try:
-            return str(uuid.UUID(value))
-        except ValueError:
-            raise serializers.ValidationError("UUID de usuário inválido")
-    
     class Meta:
         model = Exam
-        fields = ['user']
-
+        fields = []
 
 class ExamStatisticsSerializer(serializers.Serializer):
     total_exams = serializers.IntegerField()

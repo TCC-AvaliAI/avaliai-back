@@ -52,7 +52,7 @@ class ExamListAndCreate(APIView):
         responses={201: ExamSerializer, 400: "Bad Request"}
     )
     def post(self, request):
-        serializer = ExamSerializer(data=request.data)
+        serializer = ExamSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -153,9 +153,9 @@ class CreateExamByAI(APIView):
         responses={201: ExamSerializer, 400: "Bad Request"}
     )
     def post(self, request):
-        serializer = ExamSerializer(data=request.data)
+        serializer = ExamSerializer(data=request.data, context={'request': request})
         api_base = config('AI_API_BASE')
-        
+        user = self.request.user
         if serializer.is_valid():
             data = serializer.validated_data
             prompt = AIPrompt(
@@ -183,7 +183,7 @@ class CreateExamByAI(APIView):
                         answer=answer if isinstance(answer, int) else None,
                         answer_text=question_data['answer'],
                         type=question_data['type'],
-                        user=data.get('user'),
+                        user=user,
                     )
                     question.save()
                     exam.questions.add(question)

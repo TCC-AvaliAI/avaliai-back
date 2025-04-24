@@ -4,8 +4,11 @@ from .models import Question
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = '__all__'
+        exclude = ('user',)
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
 
 class AIQuestionRequestSerializer(serializers.Serializer):
     description = serializers.CharField(required=True)
-    user = serializers.CharField(required=True)

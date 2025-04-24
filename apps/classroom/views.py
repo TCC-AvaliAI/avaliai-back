@@ -30,7 +30,7 @@ class ClassroomListAndCreate(APIView):
         responses={201: ClassroomSerializer, 400: "Bad Request"}
     )
     def post(self, request):
-        serializer = ClassroomSerializer(data=request.data)
+        serializer = ClassroomSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
