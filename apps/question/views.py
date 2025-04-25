@@ -10,9 +10,10 @@ from .serializers import QuestionSerializer, AIQuestionRequestSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from decouple import config
+from django.utils import timezone
 import requests
 import json
-import uuid
+from rest_framework.pagination import PageNumberPagination
 
 class QuestionListAndCreate(APIView):
     permission_classes = [IsAuthenticated]
@@ -132,3 +133,22 @@ class CreateQuestionByAI(APIView):
             return Response(QuestionSerializer(question).data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RecentQuestions(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Retrieve recent questions with pagination",
+        responses={200: QuestionSerializer(many=True)}
+    )
+    def get(self, request):
+        user = self.request.user
+        current_date = timezone.now().month
+        questions = Question.objects.filter(user=user, created_at__month=current_date).order_by('-created_at')
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        paginated_questions = paginator.paginate_queryset(questions, request)
+        
+        serializer = QuestionSerializer(paginated_questions, many=True)
+        return paginator.get_paginated_response(serializer.data)

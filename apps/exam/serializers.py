@@ -61,8 +61,6 @@ class ExamStatisticsSerializer(serializers.Serializer):
     total_exams_generated_by_ai = serializers.IntegerField()
     total_exams_generated_by_ai_last_month = serializers.IntegerField()
     recent_exams = ExamSerializer(many=True)
-    recent_questions = QuestionSerializer(many=True)
-
 class UpdateExamQRCodeSerializer(serializers.ModelSerializer):
     qr_code = serializers.CharField(required=True)
     class Meta:
