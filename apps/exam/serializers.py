@@ -29,7 +29,7 @@ class ExamSerializer(serializers.ModelSerializer):
         if questions_data:
             from apps.question.models import Question
             for question_data in questions_data:
-                # Adiciona o usuário atual aos dados da questão
+                
                 question = Question.objects.create(
                     user=self.context['request'].user,
                     **question_data
@@ -42,6 +42,8 @@ class ExamSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['discipline'] = instance.discipline.name
         representation['classroom'] = instance.classroom.name
+        representation['status'] = instance.get_status_display()  
+        representation['difficulty'] = instance.get_difficulty_display()
         return representation
 
 class ExamListSerializer(serializers.ModelSerializer):
