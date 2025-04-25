@@ -6,6 +6,8 @@ from rest_framework import status
 from social_django.utils import load_strategy
 from suap_backend.backends import SuapOAuth2
 from rest_framework.permissions import AllowAny
+from decouple import config
+import requests
 
 class IndexView(TemplateView):
     template_name = 'index.html'
@@ -52,3 +54,46 @@ class SuapLoginView(APIView):
         except Exception as e:
             print(f"Erro inesperado: {e}")  
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class RefreshTokenView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.data.get('refresh_token')
+        if not refresh_token:
+            return Response(
+                {"error": "Refresh token is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            response = requests.post(
+                'https://suap.ifrn.edu.br/o/token/',
+                data={
+                    'grant_type': 'refresh_token',
+                    'refresh_token': refresh_token,
+                    'client_id': config('SUAP_CLIENT_ID'),
+                    'client_secret': config('SUAP_CLIENT_SECRET'),
+                }
+            )
+
+            if response.status_code == 200:
+                tokens = response.json()
+                return Response({
+                    'access_token': tokens['access_token'],
+                    'refresh_token': tokens.get('refresh_token', refresh_token)
+                })
+            else:
+                return Response(
+                    {"error": "Failed to refresh token"}, 
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+        except Exception as e:
+            print(f"Erro ao fazer refresh do token: {str(e)}")
+            return Response(
+                {"error": "Failed to refresh token"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
