@@ -8,9 +8,9 @@ class ExamStatus(models.TextChoices):
     ARCHIVED = 'ARCHIVED', 'Arquivada'
 
 class ExamDifficulty(models.TextChoices):
-    EASY = 'EASY', 'Easy'
-    MEDIUM = 'MEDIUM', 'Medium'
-    HARD = 'HARD', 'Hard'
+    EASY = 'EASY', 'Fácil'
+    MEDIUM = 'MEDIUM', 'Média'
+    HARD = 'HARD', 'Difícil'
 
 class Exam(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
