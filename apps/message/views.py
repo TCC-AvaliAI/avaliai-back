@@ -30,7 +30,7 @@ class MessageListAndCreateView(APIView):
     def post(self, request):
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user, role=MessageRole.USER)
+            user_message = serializer.save(user=request.user, role=MessageRole.USER)
             content = serializer.validated_data.get('content')
             answer = get_question_response(content)
             assistant_message = Message.objects.create(
@@ -39,8 +39,9 @@ class MessageListAndCreateView(APIView):
                 role=MessageRole.ASSISTANT,
             )
             return Response(
-                {
-                    'answer': MessageSerializer(assistant_message).data
+                {   
+                    'user_message': MessageSerializer(user_message).data,
+                    'assistant_message': MessageSerializer(assistant_message).data
                 },
                 status=status.HTTP_201_CREATED
             )

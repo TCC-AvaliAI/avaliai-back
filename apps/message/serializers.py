@@ -7,5 +7,6 @@ class MessageSerializer(serializers.ModelSerializer):
         exclude = ('user',)
 
 class MessageAnswerSerializer(serializers.Serializer):
-    answer = MessageSerializer()
+    user_message = MessageSerializer()
+    assistant_message = MessageSerializer()
 
