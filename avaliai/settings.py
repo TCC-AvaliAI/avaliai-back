@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'apps.classroom',
     'apps.question',
     'apps.exam',
+    'apps.message',
     'social_django',
     'rolepermissions',
     'rest_framework',
