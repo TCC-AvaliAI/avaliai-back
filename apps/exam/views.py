@@ -15,8 +15,8 @@ from decouple import config
 import requests
 import json
 from django.core.exceptions import ValidationError
-from .services.exam_statistics import get_exam_statistics
-from .services.exam_html import generate_html_exam
+from .services.exam_statistics import ExamStatisticsService
+from .services.exam_html import ExamHTMLService
 import pdfkit
 from django.http import HttpResponse
 from pdfkit.configuration import Configuration
@@ -202,7 +202,7 @@ class ExamDetails(APIView):
         responses={200: ExamStatisticsSerializer}
     )
     def get(self, request):
-        stats = get_exam_statistics()
+        stats = ExamStatisticsService.get_exam_statistics()
         serializer = ExamStatisticsSerializer(stats)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -243,7 +243,7 @@ class ExamPDFFile(APIView):
         exam = get_object_or_404(Exam, pk=exam_id)  
         if(exam.qr_code == None):
             return Response({"error": "The qr code has not been generated yet"}, status=status.HTTP_400_BAD_REQUEST)
-        html_content = generate_html_exam(exam)
+        html_content = ExamHTMLService.generate_html_exam(exam)
         config = Configuration(wkhtmltopdf='/usr/bin/wkhtmltopdf')
         pdf = pdfkit.from_string(html_content, False, configuration=config)
         response = HttpResponse(pdf, content_type='application/pdf')

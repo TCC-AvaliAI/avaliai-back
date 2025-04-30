@@ -6,7 +6,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .serializers import MessageSerializer, MessageAnswerSerializer
 from .models import Message, MessageRole
-from .services.get_response_question import get_question_response
+from .services.get_response_question import ResponseQuestionService
 
 class MessageListAndCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -32,7 +32,7 @@ class MessageListAndCreateView(APIView):
         if serializer.is_valid():
             user_message = serializer.save(user=request.user, role=MessageRole.USER)
             content = serializer.validated_data.get('content')
-            answer = get_question_response(content)
+            answer = ResponseQuestionService.get_question_response(content)
             assistant_message = Message.objects.create(
                 user=request.user,
                 content=answer,
