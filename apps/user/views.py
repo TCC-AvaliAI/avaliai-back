@@ -6,7 +6,6 @@ from rest_framework import status
 from social_django.utils import load_strategy
 from suap_backend.backends import SuapOAuth2
 from rest_framework.permissions import AllowAny
-from decouple import config
 from avaliai.local_settings import SOCIAL_AUTH_SUAP_KEY, SOCIAL_AUTH_SUAP_SECRET
 import requests
 

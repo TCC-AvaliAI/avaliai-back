@@ -5,7 +5,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Question
-from apps.user.models import User
 from .serializers import QuestionSerializer, AIQuestionRequestSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi

@@ -1,7 +1,6 @@
 from rest_framework.authentication import BaseAuthentication
 from rest_framework import exceptions
 import requests
-from django.contrib.auth import get_user_model
 
 class SUAPTokenAuthentication(BaseAuthentication):
     def authenticate(self, request):
@@ -45,7 +44,6 @@ class SUAPTokenAuthentication(BaseAuthentication):
             )
 
             if not created:
-                # Atualiza os campos do usuário existente
                 user.first_name = first_name.strip()
                 user.last_name = last_name.strip()
                 user.email = user_data.get('email_google_classroom', '')

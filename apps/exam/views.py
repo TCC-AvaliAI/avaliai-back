@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,7 +13,6 @@ from avaliai.ai_prompt import AIPrompt
 from decouple import config
 import requests
 import json
-from django.core.exceptions import ValidationError
 from .services.exam_statistics import ExamStatisticsService
 from .services.exam_html import ExamHTMLService
 import pdfkit

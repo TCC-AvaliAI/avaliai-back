@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from .models import Exam
 from apps.question.models import QuestionType
-from apps.question.serializers import QuestionSerializer
-import uuid
 
 class NestedQuestionSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=500)
