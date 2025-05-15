@@ -3,12 +3,14 @@ from .models import Exam
 from apps.question.models import QuestionType
 
 class NestedQuestionSerializer(serializers.Serializer):
+    id = serializers.UUIDField(read_only=True)
     title = serializers.CharField(max_length=500)
     options = serializers.ListField(child=serializers.CharField(max_length=100), required=False)
     answer = serializers.IntegerField(required=False)
     answer_text = serializers.CharField(required=False)
     type = serializers.ChoiceField(choices=QuestionType.choices)
     score = serializers.IntegerField(default=0)
+
 
 class ExamSerializer(serializers.ModelSerializer):
     discipline_name = serializers.CharField(source='discipline.name', read_only=True)
