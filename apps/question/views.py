@@ -22,9 +22,12 @@ class QuestionListAndCreate(APIView):
     def get(self, request):
         serializer = QuestionSerializer(data=request.GET)
         user = self.request.user
-        questions = Question.objects.filter(user=user)
-        serializer = QuestionSerializer(questions, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        questions = Question.objects.filter(user=user).order_by('-created_at')
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        paginated_questions = paginator.paginate_queryset(questions, request)
+        serializer = QuestionSerializer(paginated_questions, many=True)
+        return paginator.get_paginated_response(serializer.data)
        
     @swagger_auto_schema(
         operation_description="Create a new question",
