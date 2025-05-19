@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -8,11 +7,9 @@ from .models import Question
 from .serializers import QuestionSerializer, AIQuestionRequestSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from decouple import config
 from django.utils import timezone
-import requests
-import json
 from rest_framework.pagination import PageNumberPagination
+from .services.create_question_by_ai import QuestionService
 
 class QuestionListAndCreate(APIView):
     permission_classes = [IsAuthenticated]
@@ -87,50 +84,9 @@ class CreateQuestionByAI(APIView):
     )
     def post(self, request):
         serializer = AIQuestionRequestSerializer(data=request.data)
-        api_base = config('AI_API_BASE')
-
         if serializer.is_valid():
-            description = serializer.validated_data['description']
-            user = self.request.user 
-            prompt = f"Generate a question based on the following description: {description}"
-            try:
-                response = requests.post(
-                    f"{api_base}/api/ai/response/",
-                    headers={"Content-Type": "application/json"},
-                    data=json.dumps({"prompt": prompt})
-                )
-                if response.status_code != 200:
-                    return Response(
-                        {"error": f"AI API returned an error: {response.status_code}"},
-                        status=status.HTTP_502_BAD_GATEWAY
-                    )
-                response_data = response.json().get("response", {})
-            except requests.exceptions.RequestException as e:
-                return Response(
-                    {"error": f"Failed to connect to AI API: {str(e)}"},
-                    status=status.HTTP_502_BAD_GATEWAY
-                )
-            except json.JSONDecodeError:
-                return Response(
-                    {"error": "Invalid JSON response from AI API"},
-                    status=status.HTTP_502_BAD_GATEWAY
-                )
-            answer = response_data.get('answer')
-            if isinstance(answer, str) and answer.isdigit():
-                answer = int(answer)
-
-            question = Question.objects.create(
-                title=response_data.get('title', ''),
-                options=response_data.get('options', []),
-                answer=answer if isinstance(answer, int) else None,
-                answer_text=response_data.get('answer', ''),
-                type=response_data.get('type', ''),
-                user=request.user,  # Adicionando o usuário aqui
-            )
-            question.save()
-
+            question = QuestionService.create_question(serializer, request)
             return Response(QuestionSerializer(question).data, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
