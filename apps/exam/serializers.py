@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Exam
 from apps.question.models import QuestionType
+from apps.discipline.serializers import DisciplineSerializer
+from apps.classroom.serializers import ClassroomSerializer
 
 class NestedQuestionSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
@@ -10,13 +12,11 @@ class NestedQuestionSerializer(serializers.Serializer):
     answer_text = serializers.CharField(required=False)
     type = serializers.ChoiceField(choices=QuestionType.choices)
     score = serializers.IntegerField(default=0)
+    was_generated_by_ai = serializers.BooleanField(default=False)
 
 
 class ExamSerializer(serializers.ModelSerializer):
-    discipline_name = serializers.CharField(source='discipline.name', read_only=True)
-    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
     questions = NestedQuestionSerializer(many=True, required=False)
-
     class Meta:
         model = Exam
         exclude = ('user',)
@@ -40,8 +40,8 @@ class ExamSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['discipline'] = instance.discipline.name
-        representation['classroom'] = instance.classroom.name
+        representation['discipline'] = DisciplineSerializer(instance.discipline).data
+        representation["classroom"] = ClassroomSerializer(instance.classroom).data
         representation['status'] = instance.get_status_display()  
         representation['difficulty'] = instance.get_difficulty_display()
         return representation

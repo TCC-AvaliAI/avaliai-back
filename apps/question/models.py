@@ -19,6 +19,7 @@ class Question(models.Model):
     user = models.ForeignKey('user.User', on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
+    was_generated_by_ai = models.BooleanField(default=False)
     type = models.CharField(
         max_length=2,
         choices=QuestionType.choices,

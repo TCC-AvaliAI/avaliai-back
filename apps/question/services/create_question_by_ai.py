@@ -43,5 +43,6 @@ class QuestionService:
             type=response_data.get('type', ''),
             user=request.user,
             )
+        question.was_generated_by_ai = True
         question.save()
         return question

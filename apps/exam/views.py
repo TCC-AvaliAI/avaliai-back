@@ -8,16 +8,14 @@ from drf_yasg import openapi
 from .models import Exam, ExamStatus
 from .serializers import ExamSerializer, ExamListSerializer, ExamStatisticsSerializer, UpdateExamQRCodeSerializer
 from apps.question.serializers import QuestionSerializer
-from apps.question.models import Question
 from avaliai.ai_prompt import AIPrompt
-from decouple import config
 import requests
-import json
 from .services.exam_statistics import ExamStatisticsService
 from .services.exam_html import ExamHTMLService
 import pdfkit
 from django.http import HttpResponse
 from pdfkit.configuration import Configuration
+from .services.exam_by_ai import ExamService
 
 
 class ExamListAndCreate(APIView):
@@ -152,7 +150,6 @@ class CreateExamByAI(APIView):
     )
     def post(self, request):
         serializer = ExamSerializer(data=request.data, context={'request': request})
-        api_base = config('AI_API_BASE')
         user = self.request.user
         if serializer.is_valid():
             data = serializer.validated_data
@@ -164,28 +161,7 @@ class CreateExamByAI(APIView):
                 difficulty=data.get('difficulty', 'MEDIUM')
             ).ai_prompt
             try:
-                response = requests.post(
-                    f"{api_base}/api/ai/response/",
-                    headers={"Content-Type": "application/json"},
-                    data=json.dumps({"prompt": prompt})
-                )
-                response_data = response.json()
-                exam = serializer.save(was_generated_by_ai=True)
-                for question_data in response_data["response"]:
-                    answer = question_data['answer']
-                    if isinstance(answer, str) and answer.isdigit():
-                        answer = int(answer)
-                    question = Question.objects.create(
-                        title=question_data['title'],
-                        options=question_data['options'],
-                        answer=answer if isinstance(answer, int) else None,
-                        answer_text=question_data['answer'],
-                        type=question_data['type'],
-                        user=user,
-                    )
-                    question.save()
-                    exam.questions.add(question)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return ExamService.create_exam_by_ai(serializer, prompt, user)
             except requests.RequestException as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
