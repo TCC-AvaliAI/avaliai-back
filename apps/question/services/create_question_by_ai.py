@@ -12,7 +12,7 @@ class QuestionService:
         prompt = f"Generate a question based on the following description: {description}"
         try:
             response = requests.post(
-                    f"{api_base}/api/ai/response/",
+                    f"{api_base}/api/ai/response/question",
                     headers={"Content-Type": "application/json"},
                     data=json.dumps({"prompt": prompt})
                 )    

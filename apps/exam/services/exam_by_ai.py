@@ -11,7 +11,7 @@ class ExamService:
     def create_exam_by_ai(serializer, prompt, user):
         api_base = config('AI_API_BASE')
         response = requests.post(
-                    f"{api_base}/api/ai/response/",
+                    f"{api_base}/api/ai/response/exam",
                     headers={"Content-Type": "application/json"},
                     data=json.dumps({"prompt": prompt})
                 )
