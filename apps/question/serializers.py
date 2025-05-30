@@ -13,7 +13,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 class AIQuestionRequestSerializer(serializers.Serializer):
     description = serializers.CharField(required=True)
     model = serializers.CharField(required=True, help_text="Model to use for AI generation")
-    api_key = serializers.CharField(required=False, help_text="API key for the AI service")
+    api_key = serializers.CharField(required=False,allow_blank=True, help_text="API key for the AI service")
 
     class Meta:
         fields = ('description', 'model', 'api_key')

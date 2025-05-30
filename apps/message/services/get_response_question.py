@@ -16,5 +16,4 @@ class ResponseQuestionService:
             headers={"Content-Type": "application/json"},
             data=json.dumps(data)
         )
-        print(response.text)
         return response.json().get('answer', 'Desculpe, não consegui encontrar uma resposta para sua pergunta.')

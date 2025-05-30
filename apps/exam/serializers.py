@@ -18,7 +18,7 @@ class NestedQuestionSerializer(serializers.Serializer):
 class ExamSerializer(serializers.ModelSerializer):
     questions = NestedQuestionSerializer(many=True, required=False)
     model = serializers.CharField(required=False, help_text="Model to use for AI generation")
-    api_key = serializers.CharField(required=False, help_text="API key for the AI service")
+    api_key = serializers.CharField(required=False, allow_blank=True, help_text="API key for the AI service")
     class Meta:
         model = Exam
         exclude = ('user',)
