@@ -17,11 +17,15 @@ class NestedQuestionSerializer(serializers.Serializer):
 
 class ExamSerializer(serializers.ModelSerializer):
     questions = NestedQuestionSerializer(many=True, required=False)
+    model = serializers.CharField(required=False, help_text="Model to use for AI generation")
+    api_key = serializers.CharField(required=False, help_text="API key for the AI service")
     class Meta:
         model = Exam
         exclude = ('user',)
 
     def create(self, validated_data):
+        validated_data.pop('model', None)
+        validated_data.pop('api_key', None)
         questions_data = validated_data.pop('questions', None)
         validated_data['user'] = self.context['request'].user
         exam = Exam.objects.create(**validated_data)

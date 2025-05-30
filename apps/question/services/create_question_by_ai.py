@@ -7,14 +7,19 @@ from apps.question.models import Question
 
 class QuestionService:
     @staticmethod
-    def get_question(description) -> str:
+    def get_question(description, model, api_key) -> str:
         api_base = config('AI_API_BASE')
         prompt = f"Generate a question based on the following description: {description}"
         try:
+            data = {
+                "prompt": prompt,
+                "model": model,
+                "api_key": api_key
+            }
             response = requests.post(
                     f"{api_base}/api/ai/response/question",
                     headers={"Content-Type": "application/json"},
-                    data=json.dumps({"prompt": prompt})
+                    data=json.dumps(data)
                 )    
             if response.status_code != 200:
                 return Response(
@@ -31,7 +36,9 @@ class QuestionService:
     @staticmethod
     def create_question(serializer, request) -> str:
         description = serializer.validated_data['description']
-        response_data = QuestionService.get_question(description)
+        model = serializer.validated_data.get('model', 'default')
+        api_key = serializer.validated_data.get('api_key', None)
+        response_data = QuestionService.get_question(description, model, api_key)
         answer = response_data.get('answer')
         if isinstance(answer, str) and answer.isdigit():
                 answer = int(answer)

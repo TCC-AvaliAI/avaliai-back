@@ -161,7 +161,7 @@ class CreateExamByAI(APIView):
                 difficulty=data.get('difficulty', 'MEDIUM')
             ).ai_prompt
             try:
-                return ExamService.create_exam_by_ai(serializer, prompt, user)
+                return ExamService.create_exam_by_ai(serializer, prompt, user, data)
             except requests.RequestException as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             

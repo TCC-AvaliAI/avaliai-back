@@ -30,14 +30,27 @@ class MessageListAndCreateView(APIView):
     def post(self, request):
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
-            user_message = serializer.save(user=request.user, role=MessageRole.USER)
             content = serializer.validated_data.get('content')
-            answer = ResponseQuestionService.get_question_response(content)
+            model = serializer.validated_data.get('model')
+            api_key = serializer.validated_data.get('api_key')
+            
+            # Primeiro, obtenha a resposta da API
+            answer = ResponseQuestionService.get_question_response(content, model, api_key)
+            
+            # Depois, salve a mensagem do usuário
+            user_message = Message.objects.create(
+                user=request.user,
+                content=content,
+                role=MessageRole.USER
+            )
+            
+            # Por fim, salve a resposta do assistente
             assistant_message = Message.objects.create(
                 user=request.user,
                 content=answer,
-                role=MessageRole.ASSISTANT,
+                role=MessageRole.ASSISTANT
             )
+            
             return Response(
                 {   
                     'user_message': MessageSerializer(user_message).data,
