@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Question
-from .serializers import QuestionSerializer, AIQuestionRequestSerializer
+from .serializers import QuestionSerializer, AIQuestionRequestSerializer, QuestionWithTagsSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.utils import timezone
@@ -110,3 +110,49 @@ class RecentQuestions(APIView):
         
         serializer = QuestionSerializer(paginated_questions, many=True)
         return paginator.get_paginated_response(serializer.data)
+    
+class QuestionListAndAddTags(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a question with its tags",
+        responses={200: QuestionWithTagsSerializer()}
+    )
+    def get(self, request, question_id):
+        question = get_object_or_404(Question, pk=question_id)
+        serializer = QuestionWithTagsSerializer(question)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @swagger_auto_schema(
+        operation_description="Add tags to a question",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'tags': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(type=openapi.TYPE_STRING),
+                    description="Array of tag IDs"
+                )
+            },
+            required=['tags']
+        ),
+        responses={200: QuestionWithTagsSerializer()}
+    )
+    def post(self, request, question_id):
+        question = get_object_or_404(Question, pk=question_id)
+        tags = request.data.get('tags', [])
+        
+        if not tags:
+            return Response(
+                {"error": "Provide at least one tag"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )  
+        try:
+            question.tags.set(tags)
+            serializer = QuestionWithTagsSerializer(question)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )

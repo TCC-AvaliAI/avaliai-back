@@ -17,3 +17,15 @@ class AIQuestionRequestSerializer(serializers.Serializer):
 
     class Meta:
         fields = ('description', 'model', 'api_key')
+
+class NestedTagSerializer(serializers.Serializer):
+    id = serializers.UUIDField(read_only=True)
+    name = serializers.CharField(max_length=100, required=False)
+
+
+class QuestionWithTagsSerializer(serializers.ModelSerializer):
+    tags = NestedTagSerializer(many=True, required=False)
+
+    class Meta:
+        model = Question
+        fields = ('tags',)
