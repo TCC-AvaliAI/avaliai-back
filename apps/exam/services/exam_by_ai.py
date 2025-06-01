@@ -33,6 +33,7 @@ class ExamService:
                     answer=answer if isinstance(answer, int) else None,
                     answer_text=question_data['answer'],
                     type=question_data['type'],
+                    was_generated_by_ai=True,
                     user=user,
                 )
                 question.save()

@@ -20,6 +20,7 @@ class Question(models.Model):
     score = models.IntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
     was_generated_by_ai = models.BooleanField(default=False)
+    tags = models.ManyToManyField('tag.Tag', blank=True)
     type = models.CharField(
         max_length=2,
         choices=QuestionType.choices,
