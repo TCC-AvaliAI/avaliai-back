@@ -21,8 +21,7 @@ class QuestionListAndCreate(APIView):
     )
     def get(self, request):
         serializer = QuestionSerializer(data=request.GET)
-        user = self.request.user
-        questions = Question.objects.filter(user=user).order_by('-created_at')
+        questions = Question.objects.all().select_related("user").prefetch_related("tags").order_by('-created_at')
         paginator = PageNumberPagination()
         paginator.page_size = 10
         paginated_questions = paginator.paginate_queryset(questions, request)
@@ -140,15 +139,16 @@ class QuestionListAndAddTags(APIView):
     )
     def post(self, request, question_id):
         question = get_object_or_404(Question, pk=question_id)
-        tags = request.data.get('tags', [])
-        
+        tags = request.data.get('tags', [])     
         if not tags:
             return Response(
                 {"error": "Provide at least one tag"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )  
         try:
-            question.tags.set(tags)
+            all_tags = list(question.tags.all().values_list("id", flat=True))
+            concact_tags = tags + all_tags
+            question.tags.set(concact_tags) 
             serializer = QuestionWithTagsSerializer(question)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -156,3 +156,39 @@ class QuestionListAndAddTags(APIView):
                 {"error": str(e)}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+    @swagger_auto_schema(
+        operation_description="Remove a tag from a question",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'tag_id': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="ID of the tag to remove"
+                )
+            },
+            required=['tag_id']
+        ),
+        responses={
+            204: "No Content",
+            400: "Bad Request",
+            404: "Not Found"
+        }
+    )
+    def delete(self, request, question_id):
+        question = get_object_or_404(Question, pk=question_id)
+        tag_id = request.data.get('tag_id')
+        
+        if tag_id is None:
+            return Response(
+                {"error": "tag_id is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not question.tags.filter(id=tag_id).exists():
+            return Response(
+                {"error": "Tag not found for this question"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        question.tags.remove(tag_id)
+        return Response(status=status.HTTP_204_NO_CONTENT)

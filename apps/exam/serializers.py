@@ -3,6 +3,7 @@ from .models import Exam
 from apps.question.models import QuestionType
 from apps.discipline.serializers import DisciplineSerializer
 from apps.classroom.serializers import ClassroomSerializer
+from apps.tag.serializers import TagSerializer
 
 class NestedQuestionSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
@@ -13,6 +14,7 @@ class NestedQuestionSerializer(serializers.Serializer):
     type = serializers.ChoiceField(choices=QuestionType.choices)
     score = serializers.IntegerField(default=0)
     was_generated_by_ai = serializers.BooleanField(default=False)
+    tags = TagSerializer(many=True, read_only=True)
 
 
 class ExamSerializer(serializers.ModelSerializer):
