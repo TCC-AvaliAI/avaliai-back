@@ -4,7 +4,7 @@ from apps.tag.serializers import TagSerializer
 
 class QuestionSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    
+    author_name = serializers.CharField(source='user.first_name', read_only=True)
     class Meta:
         model = Question
         exclude = ('user',)

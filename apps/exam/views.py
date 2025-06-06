@@ -16,6 +16,7 @@ import pdfkit
 from django.http import HttpResponse
 from pdfkit.configuration import Configuration
 from .services.exam_by_ai import ExamService
+from uuid import UUID
 
 
 class ExamListAndCreate(APIView):
@@ -137,8 +138,15 @@ class ExamQuestions(APIView):
         question_id = request.data.get('question_id')
         if not question_id:
             return Response({"error": "question_id is required"}, status=status.HTTP_400_BAD_REQUEST)
-        exam.questions.add(question_id)
-        return Response({"message": "Question added to exam"}, status=status.HTTP_200_OK)
+        
+        try:
+            question_uuid = UUID(question_id)
+            if question_uuid in exam.questions.values_list('id', flat=True):
+                return Response({"error": "Question already exists in exam"}, status=status.HTTP_400_BAD_REQUEST)
+            exam.questions.add(question_id)
+            return Response({"message": "Question added to exam"}, status=status.HTTP_200_OK)
+        except ValueError:
+            return Response({"error": "Invalid UUID format"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateExamByAI(APIView):
     permission_classes = [IsAuthenticated]
