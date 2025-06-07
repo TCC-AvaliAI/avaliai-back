@@ -16,12 +16,23 @@ class QuestionListAndCreate(APIView):
 
     @swagger_auto_schema(
         operation_description="Retrieve all questions",
-        query_serializer=QuestionSerializer,
+        manual_parameters=[
+            openapi.Parameter(
+                'search',
+                openapi.IN_QUERY,
+                description="Filter questions by title",
+                type=openapi.TYPE_STRING,
+                required=False
+            )
+        ],
         responses={200: QuestionSerializer(many=True)}
     )
     def get(self, request):
         serializer = QuestionSerializer(data=request.GET)
         questions = Question.objects.all().select_related("user").prefetch_related("tags").order_by('-created_at')
+        search = request.query_params.get('search', None)
+        if search:
+            questions = questions.filter(title__icontains=search)
         paginator = PageNumberPagination()
         paginator.page_size = 10
         paginated_questions = paginator.paginate_queryset(questions, request)
