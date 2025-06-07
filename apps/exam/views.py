@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -24,6 +25,15 @@ class ExamListAndCreate(APIView):
 
     @swagger_auto_schema(
         operation_description="Retrieve all exams",
+        manual_parameters=[
+            openapi.Parameter(
+                'search',
+                openapi.IN_QUERY,
+                description="Filter questions by title",
+                type=openapi.TYPE_STRING,
+                required=False
+            )
+        ],
         query_serializer=ExamListSerializer,
         responses={
             200: ExamSerializer(many=True),
@@ -31,17 +41,16 @@ class ExamListAndCreate(APIView):
         }
     )
     def get(self, request):
-        serializer = ExamListSerializer(data=request.GET)
-        try:
-            user = self.request.user
-            exams = Exam.objects.filter(user=user).order_by('-created_at')
-            serializer = ExamSerializer(exams, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(
-                {"error": "Erro ao buscar exames", "details": str(e)}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        serializer = ExamSerializer(data=request.GET)
+        questions = Exam.objects.all().select_related("user").order_by('-created_at')
+        search = request.query_params.get('search', None)
+        if search:
+            questions = questions.filter(title__icontains=search)
+        paginator = PageNumberPagination()
+        paginator.page_size = 6
+        paginated_questions = paginator.paginate_queryset(questions, request)
+        serializer = ExamSerializer(paginated_questions, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     @swagger_auto_schema(
         operation_description="Create a new exam",
