@@ -108,16 +108,27 @@ class RecentQuestions(APIView):
 
     @swagger_auto_schema(
         operation_description="Retrieve recent questions with pagination",
+        manual_parameters=[
+            openapi.Parameter(
+                'search',
+                openapi.IN_QUERY,
+                description="Filter questions by title",
+                type=openapi.TYPE_STRING,
+                required=False
+            ) 
+        ],
         responses={200: QuestionSerializer(many=True)}
     )
     def get(self, request):
         user = self.request.user
         current_date = timezone.now().month
         questions = Question.objects.filter(user=user, created_at__month=current_date).order_by('-created_at')
+        search = request.query_params.get('search', None)
+        if search:
+            questions = questions.filter(title__icontains=search)
         paginator = PageNumberPagination()
         paginator.page_size = 10
         paginated_questions = paginator.paginate_queryset(questions, request)
-        
         serializer = QuestionSerializer(paginated_questions, many=True)
         return paginator.get_paginated_response(serializer.data)
     
