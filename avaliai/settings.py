@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-f0f03^9l7if=g-x#y02__c7rc)fusu3=s%vuhg8fh6^sa+x!bt'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -155,11 +155,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SESSION_COOKIE_NAME = 'avaliai'
 
-try:
-    from .local_settings import *
-except ImportError:
-    pass
-
+SOCIAL_AUTH_SUAP_KEY= config('SOCIAL_AUTH_SUAP_KEY')
+SOCIAL_AUTH_SUAP_SECRET = config('SOCIAL_AUTH_SUAP_SECRET')
 
 LOGIN_REDIRECT_URL = config('URL_REDIRECT')
 
