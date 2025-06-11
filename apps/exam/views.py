@@ -194,7 +194,8 @@ class ExamDetails(APIView):
         responses={200: ExamStatisticsSerializer}
     )
     def get(self, request):
-        stats = ExamStatisticsService.get_exam_statistics()
+        user = request.user
+        stats = ExamStatisticsService.get_exam_statistics(user)
         serializer = ExamStatisticsSerializer(stats)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
