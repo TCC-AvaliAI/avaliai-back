@@ -6,7 +6,8 @@ from rest_framework import status
 from social_django.utils import load_strategy
 from suap_backend.backends import SuapOAuth2
 from rest_framework.permissions import AllowAny
-from avaliai.local_settings import SOCIAL_AUTH_SUAP_KEY, SOCIAL_AUTH_SUAP_SECRET
+from decouple import config
+
 import requests
 
 class IndexView(TemplateView):
@@ -74,8 +75,8 @@ class RefreshTokenView(APIView):
                 data={
                     'grant_type': 'refresh_token',
                     'refresh_token': refresh_token,
-                    'client_id': SOCIAL_AUTH_SUAP_KEY,
-                    'client_secret': SOCIAL_AUTH_SUAP_SECRET,
+                    'client_id': config("SOCIAL_AUTH_SUAP_KEY"),
+                    'client_secret': config("SOCIAL_AUTH_SUAP_SECRET"),
                 }
             )
 
