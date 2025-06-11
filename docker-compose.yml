@@ -6,6 +6,7 @@ networks:
 
 volumes:
   postgres_data:
+  static_volume:
 
 services:
   postgres:
@@ -31,9 +32,10 @@ services:
   web:
     build: .
     container_name: django
-    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
+      - static_volume:/app/staticfiles
     ports:
       - "8000:8000"
     environment:
