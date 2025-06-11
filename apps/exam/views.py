@@ -41,8 +41,9 @@ class ExamListAndCreate(APIView):
         }
     )
     def get(self, request):
+        user = request.user
         serializer = ExamSerializer(data=request.GET)
-        questions = Exam.objects.all().select_related("user").order_by('-created_at')
+        questions = Exam.objects.filter(user=user).select_related("user").order_by('-created_at')
         search = request.query_params.get('search', None)
         if search:
             questions = questions.filter(title__icontains=search)
