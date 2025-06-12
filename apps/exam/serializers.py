@@ -15,6 +15,7 @@ class NestedQuestionSerializer(serializers.Serializer):
     score = serializers.IntegerField(default=0)
     was_generated_by_ai = serializers.BooleanField(default=False)
     tags = TagSerializer(many=True, read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
 
 
 class ExamSerializer(serializers.ModelSerializer):
