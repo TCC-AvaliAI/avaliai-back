@@ -18,9 +18,9 @@ class ExamStatisticsService:
         total_exams_applied = Exam.objects.filter(user=user, status="APPLIED").count()
         recent_exams = Exam.objects.filter(user=user, created_at__gte=now - timezone.timedelta(days=30)).order_by('-created_at')
         total_questions = Question.objects.filter(user=user).count()
-        total_questions_last_month = Question.objects.filter(created_at__month=current_month).count()
-        total_exams_generated_by_ai = Exam.objects.filter(was_generated_by_ai=True).count()
-        total_exams_generated_by_ai_last_month = Exam.objects.filter(created_at__month=current_month, was_generated_by_ai=True).count()
+        total_questions_last_month = Question.objects.filter(user=user, created_at__month=current_month).count()
+        total_exams_generated_by_ai = Exam.objects.filter(user=user, was_generated_by_ai=True).count()
+        total_exams_generated_by_ai_last_month = Exam.objects.filter(user=user, created_at__month=current_month, was_generated_by_ai=True).count()
 
         return {
             "total_exams": total_exams,
