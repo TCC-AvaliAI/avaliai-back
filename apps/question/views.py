@@ -23,6 +23,13 @@ class QuestionListAndCreate(APIView):
                 description="Filter questions by title",
                 type=openapi.TYPE_STRING,
                 required=False
+            ),
+            openapi.Parameter(
+                'type',
+                openapi.IN_QUERY,
+                description="Filter questions by type",
+                type=openapi.TYPE_STRING,
+                required=False
             )
         ],
         responses={200: QuestionSerializer(many=True)}
@@ -31,8 +38,11 @@ class QuestionListAndCreate(APIView):
         serializer = QuestionSerializer(data=request.GET)
         questions = Question.objects.all().select_related("user").prefetch_related("tags").order_by('-created_at')
         search = request.query_params.get('search', None)
+        question_type = request.query_params.get('type', None)
         if search:
             questions = questions.filter(title__icontains=search)
+        if question_type:
+            questions = questions.filter(type=question_type)
         paginator = PageNumberPagination()
         paginator.page_size = 10
         paginated_questions = paginator.paginate_queryset(questions, request)
