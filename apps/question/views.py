@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.db.models.functions import Lower
 from .models import Question
 from .serializers import QuestionSerializer, AIQuestionRequestSerializer, QuestionWithTagsSerializer
 from drf_yasg.utils import swagger_auto_schema
@@ -10,6 +11,7 @@ from drf_yasg import openapi
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
 from .services.create_question_by_ai import QuestionService
+from avaliai.services.search_rapid_fuzz import SearchFuzzService
 
 class QuestionListAndCreate(APIView):
     permission_classes = [IsAuthenticated]
@@ -40,7 +42,7 @@ class QuestionListAndCreate(APIView):
         search = request.query_params.get('search', None)
         question_type = request.query_params.get('type', None)
         if search:
-            questions = questions.filter(title__icontains=search)
+            questions = SearchFuzzService.fuzzy_filter(questions, search)
         if question_type:
             questions = questions.filter(type=question_type)
         paginator = PageNumberPagination()
@@ -135,7 +137,7 @@ class RecentQuestions(APIView):
         questions = Question.objects.filter(user=user, created_at__month=current_date).order_by('-created_at')
         search = request.query_params.get('search', None)
         if search:
-            questions = questions.filter(title__icontains=search)
+            questions = SearchFuzzService.fuzzy_filter(questions, search)
         paginator = PageNumberPagination()
         paginator.page_size = 10
         paginated_questions = paginator.paginate_queryset(questions, request)

@@ -17,6 +17,7 @@ import pdfkit
 from django.http import HttpResponse
 from pdfkit.configuration import Configuration
 from .services.exam_by_ai import ExamService
+from avaliai.services.search_rapid_fuzz import SearchFuzzService
 from uuid import UUID
 
 
@@ -29,7 +30,7 @@ class ExamListAndCreate(APIView):
             openapi.Parameter(
                 'search',
                 openapi.IN_QUERY,
-                description="Filter questions by title",
+                description="Filter exams by title",
                 type=openapi.TYPE_STRING,
                 required=False
             )
@@ -43,14 +44,14 @@ class ExamListAndCreate(APIView):
     def get(self, request):
         user = request.user
         serializer = ExamSerializer(data=request.GET)
-        questions = Exam.objects.filter(user=user).select_related("user").order_by('-created_at')
+        exams = Exam.objects.filter(user=user).select_related("user").order_by('-created_at')
         search = request.query_params.get('search', None)
         if search:
-            questions = questions.filter(title__icontains=search)
+            exams = SearchFuzzService.fuzzy_filter(exams, search)
         paginator = PageNumberPagination()
         paginator.page_size = 6
-        paginated_questions = paginator.paginate_queryset(questions, request)
-        serializer = ExamSerializer(paginated_questions, many=True)
+        paginated_exams = paginator.paginate_queryset(exams, request)
+        serializer = ExamSerializer(paginated_exams, many=True)
         return paginator.get_paginated_response(serializer.data)
 
     @swagger_auto_schema(
