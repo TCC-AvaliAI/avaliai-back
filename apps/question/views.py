@@ -41,10 +41,10 @@ class QuestionListAndCreate(APIView):
         questions = Question.objects.all().select_related("user").prefetch_related("tags").order_by('-created_at')
         search = request.query_params.get('search', None)
         question_type = request.query_params.get('type', None)
-        if search:
-            questions = SearchFuzzService.fuzzy_filter(questions, search)
         if question_type:
             questions = questions.filter(type=question_type)
+        if search:
+            questions = SearchFuzzService.fuzzy_filter(questions, search)
         paginator = PageNumberPagination()
         paginator.page_size = 10
         paginated_questions = paginator.paginate_queryset(questions, request)
