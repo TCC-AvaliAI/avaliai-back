@@ -158,6 +158,32 @@ class ExamQuestions(APIView):
             return Response({"message": "Question added to exam"}, status=status.HTTP_200_OK)
         except ValueError:
             return Response({"error": "Invalid UUID format"}, status=status.HTTP_400_BAD_REQUEST)
+        
+class DetachQuestion(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Detach a question from an exam",
+        manual_parameters=[
+            openapi.Parameter(
+                'exam_id', openapi.IN_PATH, description="ID of the exam", type=openapi.TYPE_STRING
+            ),
+            openapi.Parameter(
+                'question_id', openapi.IN_PATH, description="ID of the question", type=openapi.TYPE_STRING
+            )
+        ],
+        responses={204: "No Content", 404: "Not Found"}
+    )
+    def delete(self, request, exam_id, question_id):
+        exam = get_object_or_404(Exam, pk=exam_id)
+        try:
+            question_uuid = UUID(question_id)
+            if question_uuid not in exam.questions.values_list('id', flat=True):
+                return Response({"error": "Question not found in exam"}, status=status.HTTP_404_NOT_FOUND)
+            exam.questions.remove(question_uuid)
+            return Response({"message": "Question detached from exam"}, status=status.HTTP_204_NO_CONTENT)
+        except ValueError:
+            return Response({"error": "Invalid UUID format"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateExamByAI(APIView):
     permission_classes = [IsAuthenticated]

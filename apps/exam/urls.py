@@ -6,6 +6,7 @@ urlpatterns = [
     path('ai/', CreateExamByAI.as_view(), name='exam-create-ai'),
     path('<str:exam_id>', ExamDetailUpdateAndDelete.as_view(), name='exam-update-delete'),
     path('<str:exam_id>/questions/', ExamQuestions.as_view(), name='exam-list-add-question'),
+    path('<str:exam_id>/questions/<str:question_id>', DetachQuestion.as_view(), name='detach-question'),
     path('details/', ExamDetails.as_view(), name='exam-details'),
     path('<str:exam_id>/qrcode/', UpdateExamQRCode.as_view(), name='exam-update-qr-code'),
     path('<str:exam_id>/file/', ExamPDFFile.as_view(), name='exam-pdf-file'),
