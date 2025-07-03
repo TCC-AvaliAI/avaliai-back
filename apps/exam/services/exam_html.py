@@ -9,17 +9,19 @@ class ExamHTMLService:
     @staticmethod
     def generate_html_exam(exam: Exam):
         questions_html = ""
+        option_letters = ['a', 'b', 'c', 'd', 'e']
 
         for index, question in enumerate(exam.questions.all(), start=1):
             questions_html += '<div class="question">\n'
             questions_html += f'<div class="question-text">{index}. {escape(question.title)}</div>\n'
-
+            
             if question.type == 'MC':
                 questions_html += '<div class="options">\n'
-                for alt in question.options:
+                for alt_index, alt in enumerate(question.options):
+                    letter = option_letters[alt_index]
                     questions_html += f'''
                         <div class="option">
-                            <span class="checkbox"></span> <label>{escape(alt)}</label>
+                            <span class="option-letter">{letter})</span> <label>{escape(alt)}</label>
                         </div>
                     '''
                 questions_html += '</div>\n'
