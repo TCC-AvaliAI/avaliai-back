@@ -103,6 +103,7 @@ class ExamHTMLService:
             }}
             .true-false {{
                 display: flex;
+                flex-direction: column;
                 gap: 20px;
             }}
             .essay {{
@@ -124,6 +125,8 @@ class ExamHTMLService:
                 margin-left: 16px;
                 vertical-align: middle;
             }}
+            .exam-theme{{
+            }}
             @media print {{
                 .no-print {{
                     display: none;
@@ -136,7 +139,8 @@ class ExamHTMLService:
         </head>
         <body>
             <div class="header">
-                <h1>{exam.title}</h1>
+                <h2>{exam.title}</h2>
+                <span class="exam-theme">{exam.theme}</span>
             </div>
 
             <div class="container-header">
